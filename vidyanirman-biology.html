@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidya Nirman Biology Portal | Class 9th CBSE/ICSE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Noto+Serif+Devanagari:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gurukul: {
+                            base: '#0F0103',
+                            card: '#220308',
+                            surface: '#3B0810',
+                            accent: '#610C1A',
+                            gold: '#FFD700',
+                            goldDark: '#D4AF37',
+                            goldLight: '#FFF2A3'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        devanagari: ['Noto Serif Devanagari', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0F0103;
+            color: #F3F4F6;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .jali-overlay {
+            background-image: radial-gradient(#FFD700 0.75px, transparent 0.75px), radial-gradient(#FFD700 0.75px, #0F0103 0.75px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            opacity: 0.04;
+        }
+
+        .gold-border-glow {
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+        }
+        
+        .gold-border-glow:hover {
+            border-color: rgba(255, 215, 0, 0.8);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF2A3 0%, #FFD700 50%, #D4AF37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-button {
+            background: linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #AA7C11 100%);
+            color: #0F0103;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .gold-button:hover {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F0103;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3B0810;
+            border-radius: 4px;
+            border: 1px solid #D4AF37;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen">
+    <div class="fixed inset-0 jali-overlay pointer-events-none z-0"></div>
+    <canvas id="emberCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+    <header class="sticky top-0 z-50 bg-gurukul-card/90 backdrop-blur-md border-b border-gurukul-goldDark/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full border-2 border-gurukul-gold flex items-center justify-center bg-gurukul-surface shadow-lg">
+                    <span class="font-cinzel text-gurukul-gold font-bold text-xl">विद्या</span>
+                </div>
+                <div>
+                    <h1 class="font-cinzel text-lg sm:text-xl font-bold gold-gradient-text tracking-wide">VIDYA NIRMAN</h1>
+                    <p class="font-devanagari text-xs text-amber-200/70">जीवविज्ञान निर्मिति: | Class 9th Biology</p>
+                </div>
+            </div>
+
+            <nav class="hidden lg:flex items-center space-x-6 text-sm font-medium">
+                <a href="#chap-videos" class="hover:text-gurukul-gold transition">Video Suite</a>
+                <a href="#osmosisLab" class="hover:text-gurukul-gold transition">Osmosis Sim</a>
+                <a href="#microscopeLab" class="hover:text-gurukul-gold transition">Tissue Scope</a>
+                <a href="#notes" class="hover:text-gurukul-gold transition">NCERT Notes</a>
+                <a href="#pdfHub" class="hover:text-gurukul-gold transition">PDF Hub</a>
+                <a href="#quiz" class="hover:text-gurukul-gold transition">100 MCQ Arena</a>
+                <a href="#flashcards" class="hover:text-gurukul-gold transition">Flashcards</a>
+            </nav>
+
+            <div class="flex items-center space-x-2">
+                <a href="#uploadModal" onclick="openUploadModal()" class="gold-button px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Notes
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative z-10 py-12 px-4 sm:px-6 lg:px-8 text-center max-w-5xl mx-auto">
+        <div class="inline-block p-1 px-4 rounded-full bg-gurukul-surface border border-gurukul-gold/30 mb-4">
+            <p class="font-devanagari text-gurukul-gold text-sm sm:text-base font-semibold">"सा विद्या या विमुक्तये" — Knowledge is that which liberates</p>
+        </div>
+        <h1 class="font-cinzel text-3xl sm:text-5xl lg:text-6xl font-extrabold gold-gradient-text mb-6 leading-tight">
+            Comprehensive CBSE & ICSE Class 9th Biology Portal
+        </h1>
+        <p class="text-gray-300 text-sm sm:text-base max-w-3xl mx-auto mb-8 font-sans">
+            Master the Fundamental Unit of Life, Plant & Animal Tissues, and Food Resource Improvement through animated visual suites, real-time lab experiments, exhaustive NCERT notes, and Olympiad-level assessments.
+        </p>
+
+        <!-- Founders Attribution Badge -->
+        <div class="flex flex-wrap items-center justify-center gap-4 mb-8">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gurukul-card border border-amber-500/30 text-xs text-amber-200">
+                <i class="fa-solid fa-crown text-amber-400"></i>
+                <span>Founder: <strong class="text-amber-100">AMRIT SINGH</strong></span>
+            </div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gurukul-card border border-amber-500/30 text-xs text-amber-200">
+                <i class="fa-solid fa-star text-amber-400"></i>
+                <span>Co-Founder: <strong class="text-amber-100">ANMOL TIWARI</strong></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+            <div class="bg-gurukul-card/80 p-4 rounded-xl border border-gurukul-gold/20 backdrop-blur">
+                <div class="text-gurukul-gold font-cinzel text-2xl font-bold">100+</div>
+                <div class="text-xs text-gray-400">Interactive MCQs</div>
+            </div>
+            <div class="bg-gurukul-card/80 p-4 rounded-xl border border-gurukul-gold/20 backdrop-blur">
+                <div class="text-gurukul-gold font-cinzel text-2xl font-bold">6</div>
+                <div class="text-xs text-gray-400">Sequenced Video Guides</div>
+            </div>
+            <div class="bg-gurukul-card/80 p-4 rounded-xl border border-gurukul-gold/20 backdrop-blur">
+                <div class="text-gurukul-gold font-cinzel text-2xl font-bold">10+</div>
+                <div class="text-xs text-gray-400">Interactive Scope Slides</div>
+            </div>
+            <div class="bg-gurukul-card/80 p-4 rounded-xl border border-gurukul-gold/20 backdrop-blur">
+                <div class="text-gurukul-gold font-cinzel text-2xl font-bold">PDF</div>
+                <div class="text-xs text-gray-400">Upload & Share Hub</div>
+            </div>
+        </div>
+    </section>
+    
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 pb-20">
+        <!-- SEQUENCED VIDEO LEARNING SECTION -->
+        <section id="chap-videos" class="bg-gurukul-card rounded-2xl gold-border-glow p-6 sm:p-8">
+            <div class="flex items-center gap-3 mb-8 pb-4 border-b border-gurukul-gold/20">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-400 font-bold"><i class="fa-solid fa-video"></i></div>
+                <div>
+                    <span class="text-xs text-amber-400 font-bold uppercase tracking-widest font-cinzel">VISUAL LEARNING SUITE</span>
+                    <h2 class="font-cinzel text-2xl sm:text-3xl font-black text-gold-gradient">Sequenced Animated Biology Video Guides</h2>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Video 1 -->
+                <div class="bg-gurukul-surface/80 p-5 rounded-2xl border border-gurukul-gold/30 space-y-3">
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Sequence #1</span>
+                    <h3 class="font-bold text-sm text-amber-200">1. Prokaryotic &amp; Eukaryotic 3D Cell Models</h3>
+                    <video controls class="w-full rounded-xl border border-amber-500/20 shadow-md aspect-video object-cover">
+                        <source src="3D_cell_models_rotating_in_20261013145715.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p class="text-xs text-slate-300">Detailed 3D rotational views highlighting structural differences between prokaryotic and eukaryotic cells[cite: 1].</p>
+                </div>
+                 
+                <!-- Video 2 -->
+                <div class="bg-gurukul-surface/80 p-5 rounded-2xl border border-gurukul-gold/30 space-y-3">
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Sequence #2</span>
+                    <h3 class="font-bold text-sm text-amber-200">2. Robert Hooke Microscope Simulation</h3>
+                    <video controls class="w-full rounded-xl border border-amber-500/20 shadow-md aspect-video object-cover">
+                        <source src="hooke.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p class="text-xs text-slate-300">Historical simulation of Robert Hooke examining cork slices under his microscope in 1665.</p>
+                </div>
+                
+                <!-- Video 3 -->
+                <div class="bg-gurukul-surface/80 p-5 rounded-2xl border border-gurukul-gold/30 space-y-3">
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Sequence #3</span>
+                    <h3 class="font-bold text-sm text-amber-200">3. Bricks and Onion Cells Analogy</h3>
+                    <video controls class="w-full rounded-xl border border-amber-500/20 shadow-md aspect-video object-cover">
+                        <source src="Onion_cells_animate_on_wall_20261013145706.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p class="text-xs text-slate-300">Visualizing how structural bricks on a wall correlate directly to cellular compartments.</p>
+                </div>
+
+                <!-- Video 4 -->
+                <div class="bg-gurukul-surface/80 p-5 rounded-2xl border border-gurukul-gold/30 space-y-3">
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Sequence #4</span>
+                    <h3 class="font-bold text-sm text-amber-200">4. Plant vs Animal Cell Animation</h3>
+                    <video controls class="w-full rounded-xl border border-amber-500/20 shadow-md aspect-video object-cover">
+                        <source src="Plant_and_animal_cell_animation_20261013145721.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p class="text-xs text-slate-300">Comparative anatomical walkthrough of plant cell walls, large vacuoles, and animal cellular structures.</p>
+                </div>
+        
+                <!-- Video 5 -->
+                <div class="bg-gurukul-surface/80 p-5 rounded-2xl border border-gurukul-gold/30 space-y-3">
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Sequence #5</span>
+                    <h3 class="font-bold text-sm text-amber-200">5. 3D Organelles Functional Suite</h3>
+                    <video controls class="w-full rounded-xl border border-amber-500/20 shadow-md aspect-video object-cover">
+                        <source src="Make_cell_organelles_video_20261016194513.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p class="text-xs text-slate-300">Close-up animations of mitochondria cristae, endoplasmic reticulum networks, and golgi apparatus.</p>
+                </div>
+
+                <!-- Video 6 -->
+                <div class="bg-gurukul-surface/80 p-5 rounded-2xl border border-gurukul-gold/30 space-y-3">
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Sequence #6</span>
+                    <h3 class="font-bold text-sm text-amber-200">6. Complete Tissue & Diagram Guide</h3>
+                    <video controls class="w-full rounded-xl border border-amber-500/20 shadow-md aspect-video object-cover">
+                        <source src="diagram.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p class="text-xs text-slate-300">Comprehensive summary diagrams and structural breakdowns of plant and animal tissue networks.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- OSMOSIS LAB SIMULATOR -->
+        <section id="osmosisLab" class="bg-gurukul-card rounded-2xl gold-border-glow p-6">
+            <div class="mb-6 pb-4 border-b border-gurukul-gold/20">
+                <span class="text-xs font-bold text-gurukul-gold uppercase tracking-widest font-cinzel">Interactive Module II</span>
+                <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-white">Osmosis & Plasmolysis Laboratory Simulator</h2>
+                <p class="text-xs text-gray-400">Manipulate extracellular solute concentrations and observe cellular responses in real time.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-gurukul-surface/60 p-5 rounded-xl border border-gurukul-gold/20 space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-gurukul-gold mb-2">Cell Model Type:</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="modePlant" onclick="setOsmosisCellType('plant')" class="py-2 px-3 text-xs font-bold rounded-lg border border-gurukul-gold bg-gurukul-gold text-black">Plant Cell</button>
+                            <button id="modeRBC" onclick="setOsmosisCellType('rbc')" class="py-2 px-3 text-xs font-bold rounded-lg border border-gurukul-gold/30 bg-gurukul-card text-gray-300">RBC (Animal)</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-bold text-gurukul-gold">Extracellular Concentration:</label>
+                            <span id="soluteVal" class="text-xs font-mono text-amber-300">0.9% (Isotonic)</span>
+                        </div>
+                        <input type="range" id="soluteSlider" min="0" max="100" value="50" class="w-full accent-amber-400 cursor-pointer">
+                    </div>
+
+                    <div class="p-3 bg-gurukul-card rounded-lg border border-gurukul-gold/10">
+                        <span class="text-xs text-gray-400 block mb-1">Turgor Pressure / Membrane Tension:</span>
+                        <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden border border-gray-700">
+                            <div id="pressureBar" class="bg-gradient-to-r from-blue-500 via-green-500 to-red-500 h-full w-1/2 transition-all duration-300"></div>
+                        </div>
+                        <span id="pressureText" class="text-[11px] text-gurukul-gold font-mono mt-1 block text-right">Normal Turgor State</span>
+                    </div>
+
+                    <div class="p-3 bg-gurukul-card/80 rounded-lg border border-gurukul-gold/20 text-xs text-gray-300 space-y-1">
+                        <strong class="text-gurukul-gold">State Summary:</strong>
+                        <p id="osmosisStateDesc">In an isotonic solution, net water movement is zero. The cell maintains its standard dimensions.</p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-black/60 rounded-xl border border-gurukul-gold/20 p-4 flex flex-col justify-between items-center relative overflow-hidden min-h-[350px]">
+                    <canvas id="osmosisCanvas" width="500" height="300" class="w-full h-[300px]"></canvas>
+                    <div id="waterFlowIndicator" class="text-xs font-mono text-amber-300 bg-gurukul-card/90 px-3 py-1 rounded-full border border-gurukul-gold/30 mt-2">
+                        ← Water Inflow = Water Outflow →
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MICROSCOPE TISSUE EXPLORER -->
+        <section id="microscopeLab" class="bg-gurukul-card rounded-2xl gold-border-glow p-6">
+            <div class="mb-6 pb-4 border-b border-gurukul-gold/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="text-xs font-bold text-gurukul-gold uppercase tracking-widest font-cinzel">Interactive Module III</span>
+                    <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-white">Microscopic Tissue Explorer</h2>
+                    <p class="text-xs text-gray-400">High-resolution simulated slide examination with stain toggles and focus adjustments.</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs text-gray-300">Stain:</span>
+                    <button onclick="setStain('safranin')" class="px-3 py-1.5 rounded text-xs bg-red-900/60 border border-red-500 text-red-200">Safranin</button>
+                    <button onclick="setStain('methylene')" class="px-3 py-1.5 rounded text-xs bg-blue-900/60 border border-blue-500 text-blue-200">Methylene Blue</button>
+                    <button onclick="setStain('none')" class="px-3 py-1.5 rounded text-xs bg-gray-800 border border-gray-600 text-gray-300">Unstained</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="space-y-1.5 bg-gurukul-surface/50 p-3 rounded-xl border border-gurukul-gold/20 max-h-[420px] overflow-y-auto">
+                    <span class="text-xs font-bold text-gurukul-gold uppercase tracking-wider block mb-2 px-1">Plant Tissues:</span>
+                    <button onclick="loadSlide('parenchyma')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Parenchyma <span>🌱</span></button>
+                    <button onclick="loadSlide('collenchyma')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Collenchyma <span>🌿</span></button>
+                    <button onclick="loadSlide('sclerenchyma')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Sclerenchyma <span>🥥</span></button>
+                    <button onclick="loadSlide('xylem')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Xylem Vessels <span>🪵</span></button>
+                    <button onclick="loadSlide('phloem')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Phloem Tubes <span>🍃</span></button>
+
+                    <span class="text-xs font-bold text-gurukul-gold uppercase tracking-wider block mt-3 mb-2 px-1">Animal Tissues:</span>
+                    <button onclick="loadSlide('squamous')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Squamous Epithelium <span>👅</span></button>
+                    <button onclick="loadSlide('striated')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Striated Muscle <span>💪</span></button>
+                    <button onclick="loadSlide('neuron')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Motor Neuron <span>🧠</span></button>
+                    <button onclick="loadSlide('blood')" class="w-full text-left p-2 rounded text-xs hover:bg-gurukul-accent border border-transparent hover:border-gurukul-gold/30 flex items-center justify-between transition">Blood Smear <span>🩸</span></button>
+                </div>
+
+                <div class="lg:col-span-2 relative bg-black rounded-full aspect-square max-w-[380px] mx-auto border-8 border-gray-900 shadow-2xl overflow-hidden flex items-center justify-center">
+                    <canvas id="microscopeCanvas" width="400" height="400" class="w-full h-full object-cover transition-transform duration-300"></canvas>
+                    <div class="absolute inset-0 rounded-full border-[20px] border-black/80 pointer-events-none"></div>
+                </div>
+
+                <div class="bg-gurukul-surface/60 p-5 rounded-xl border border-gurukul-gold/20 flex flex-col justify-between">
+                    <div>
+                        <h3 id="slideTitle" class="font-cinzel text-xl font-bold text-gurukul-gold mb-2">Parenchyma Tissue</h3>
+                        <p id="slideDesc" class="text-xs text-gray-300 leading-relaxed mb-4">
+                            Unspecialized living cells with thin primary cellulosic walls, large central vacuoles, and prominent intercellular spaces.
+                        </p>
+                        <div class="space-y-3 mb-4">
+                            <div>
+                                <label class="text-xs text-gray-400 block mb-1">Magnification Lens:</label>
+                                <div class="grid grid-cols-3 gap-1">
+                                    <button onclick="setMagnification(10)" class="py-1 text-xs bg-gurukul-card rounded border border-gurukul-gold/30">10x</button>
+                                    <button onclick="setMagnification(40)" class="py-1 text-xs bg-gurukul-card rounded border border-gurukul-gold/30">40x</button>
+                                    <button onclick="setMagnification(100)" class="py-1 text-xs bg-gurukul-card rounded border border-gurukul-gold/30">100x</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 block mb-1">Fine Focus:</label>
+                                <input type="range" id="focusSlider" min="0" max="10" value="8" oninput="adjustFocus(this.value)" class="w-full accent-amber-400">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-gurukul-card rounded-lg border border-gurukul-gold/10 text-xs text-amber-200">
+                        <i class="fa-solid fa-lightbulb text-gurukul-gold mr-1"></i>
+                        <span id="slideKeyTrait">Key Diagnostic: Thin primary cell walls with intercellular spaces.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PDF NOTES REPOSITORY -->
+        <section id="pdfHub" class="bg-gurukul-card rounded-2xl gold-border-glow p-6">
+            <div class="mb-6 pb-4 border-b border-gurukul-gold/20 flex justify-between items-center">
+                <div>
+                    <span class="text-xs font-bold text-gurukul-gold uppercase tracking-widest font-cinzel">Official Resources</span>
+                    <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-white">PDF Notes Hub & Upload Center</h2>
+                </div>
+                <button onclick="openUploadModal()" class="gold-button px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Upload Notes
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gurukul-surface/80 p-5 rounded-xl border border-gurukul-gold/30">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded bg-red-900/60 border border-red-500 flex items-center justify-center text-red-400"><i class="fa-solid fa-file-pdf text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-sm text-white">Chapter 5: Cell</h3>
+                            <span class="text-[11px] text-gray-400">Official NCERT + Olympiad PDF</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-300 mb-4">Complete notes on Fluid Mosaic Model, organelles, and cell division mechanisms.</p>
+                    <button onclick="downloadSamplePDF('Chapter_5_The_Fundamental_Unit_of_Life.pdf')" class="w-full py-1.5 bg-gurukul-gold/20 hover:bg-gurukul-gold hover:text-black border border-gurukul-gold/40 rounded text-xs font-bold text-gurukul-gold transition">Download PDF</button>
+                </div>
+
+                <div class="bg-gurukul-surface/80 p-5 rounded-xl border border-gurukul-gold/30">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded bg-red-900/60 border border-red-500 flex items-center justify-center text-red-400"><i class="fa-solid fa-file-pdf text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-sm text-white">Chapter 6: Tissues</h3>
+                            <span class="text-[11px] text-gray-400">Official NCERT + Olympiad PDF</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-300 mb-4">Detailed comparative tables on Meristematic, Epithelial, Connective & Nervous tissues.</p>
+                    <button onclick="downloadSamplePDF('Chapter_6_Tissues_Comprehensive.pdf')" class="w-full py-1.5 bg-gurukul-gold/20 hover:bg-gurukul-gold hover:text-black border border-gurukul-gold/40 rounded text-xs font-bold text-gurukul-gold transition">Download PDF</button>
+                </div>
+
+                <div class="bg-gurukul-surface/80 p-5 rounded-xl border border-gurukul-gold/30">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded bg-red-900/60 border border-red-500 flex items-center justify-center text-red-400"><i class="fa-solid fa-file-pdf text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-sm text-white">Chapter 12: Food Resources</h3>
+                            <span class="text-[11px] text-gray-400">Official NCERT + Olympiad PDF</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-300 mb-4">Nutrient management matrix, crop protection, hybridization, and cattle/fish culture.</p>
+                    <button onclick="downloadSamplePDF('Chapter_12_Food_Resource_Improvement.pdf')" class="w-full py-1.5 bg-gurukul-gold/20 hover:bg-gurukul-gold hover:text-black border border-gurukul-gold/40 rounded text-xs font-bold text-gurukul-gold transition">Download PDF</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXHAUSTIVE NCERT NOTES -->
+        <section id="notes" class="bg-gurukul-card rounded-2xl gold-border-glow p-6 space-y-12">
+            <div class="pb-4 border-b border-gurukul-gold/20">
+                <span class="text-xs font-bold text-gurukul-gold uppercase tracking-widest font-cinzel">Curriculum Notes</span>
+                <h2 class="font-cinzel text-3xl font-bold text-white">Deep NCERT & Olympiad Biology Notes</h2>
+            </div>
+
+            <!-- CHAPTER 1 -->
+            <article class="space-y-6">
+                <div class="border-l-4 border-gurukul-gold pl-4">
+                    <h3 class="font-cinzel text-2xl font-bold text-gurukul-gold">CHAPTER 1: The Fundamental Unit of Life (Cell)</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gurukul-surface/50 p-5 rounded-xl border border-gurukul-gold/20 space-y-3">
+                        <h4 class="font-bold text-white text-sm">Historical Timeline</h4>
+                        <ul class="text-xs text-gray-300 space-y-2 list-disc list-inside">
+                            <li><strong>Robert Hooke (1665):</strong> Observed cork cells; coined <em>"Cell"</em>.</li>
+                            <li><strong>Anton van Leeuwenhoek (1674):</strong> First observed living cells.</li>
+                            <li><strong>Robert Brown (1831):</strong> Discovered the <strong>Nucleus</strong>.</li>
+                            <li><strong>Schleiden & Schwann (1838-39):</strong> Formulated <strong>Cell Theory</strong>.</li>
+                            <li><strong>Rudolf Virchow (1855):</strong> <i>"Omnis cellula-e cellula"</i>.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gurukul-surface/50 p-5 rounded-xl border border-gurukul-gold/20 space-y-3">
+                        <h4 class="font-bold text-white text-sm">Plasma Membrane & Transport</h4>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Fluid Mosaic Model (Singer & Nicolson, 1972). Features diffusion, osmosis, and endocytosis mechanisms.
+                        </p>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- 100 QUESTION MCQ ARENA -->
+        <section id="quiz" class="bg-gurukul-card rounded-2xl gold-border-glow p-6">
+            <div class="mb-6 pb-4 border-b border-gurukul-gold/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="text-xs font-bold text-gurukul-gold uppercase tracking-widest font-cinzel">Assessment</span>
+                    <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-white">100 Question Biology Test Arena</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="bg-gurukul-surface px-4 py-2 rounded-lg border border-gurukul-gold/30 text-xs">
+                        <span class="text-gray-400">Score:</span>
+                        <span id="quizScoreDisplay" class="font-bold text-gurukul-gold text-sm ml-1">0 / 100</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="bg-gurukul-surface/50 p-4 rounded-xl border border-gurukul-gold/20 max-h-[400px] overflow-y-auto">
+                    <span class="text-xs font-bold text-gurukul-gold uppercase tracking-wider block mb-2">Question Navigation (1 - 100):</span>
+                    <div id="quizNavGrid" class="grid grid-cols-5 gap-1.5"></div>
+                </div>
+
+                <div class="lg:col-span-3 bg-gurukul-surface/70 p-6 rounded-xl border border-gurukul-gold/20 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <span id="qChapterTag" class="text-xs bg-amber-900/40 text-amber-300 px-3 py-1 rounded-full border border-amber-500/30">Chapter 5: Cell</span>
+                            <span id="qNumberDisplay" class="text-xs font-mono text-gray-400">Question 1 of 100</span>
+                        </div>
+                        <h3 id="qText" class="text-base sm:text-lg font-bold text-white mb-6">Which organelle is known as the "suicide bag"?</h3>
+                        <div id="qOptionsContainer" class="space-y-3 mb-6"></div>
+                        <div id="qExplanationBox" class="hidden p-4 bg-gurukul-card rounded-lg border border-gurukul-gold/30 text-xs text-gray-300 space-y-1">
+                            <strong class="text-gurukul-gold block">Scientific Explanation:</strong>
+                            <p id="qExplanationText"></p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-6 pt-4 border-t border-gurukul-gold/20">
+                        <button onclick="prevQuestion()" class="px-4 py-2 bg-gurukul-card text-xs font-bold text-gray-300 rounded border border-gurukul-gold/30">← Previous</button>
+                        <button onclick="generateCertificate()" class="gold-button px-4 py-2 rounded text-xs font-bold uppercase">Submit & Certificate</button>
+                        <button onclick="nextQuestion()" class="px-4 py-2 bg-gurukul-card text-xs font-bold text-gurukul-gold rounded border border-gurukul-gold/30">Next →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FLASHCARDS -->
+        <section id="flashcards" class="bg-gurukul-card rounded-2xl gold-border-glow p-6">
+            <div class="mb-6 pb-4 border-b border-gurukul-gold/20 flex justify-between items-center">
+                <div>
+                    <span class="text-xs font-bold text-gurukul-gold uppercase tracking-widest font-cinzel">Rapid Revision</span>
+                    <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-white">Interactive Biology Flashcards</h2>
+                </div>
+                <span id="flashcardCounter" class="text-xs font-mono text-amber-200">Card 1 of 30</span>
+            </div>
+
+            <div class="max-w-xl mx-auto perspective-1000">
+                <div id="flashcardObject" onclick="flipFlashcard()" class="relative w-full h-64 cursor-pointer transition-transform duration-500 transform-style-3d bg-gurukul-surface border-2 border-gurukul-gold/40 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-2xl">
+                    <div id="fcFront" class="absolute inset-0 backface-hidden p-6 flex flex-col items-center justify-center space-y-3">
+                        <span class="text-xs text-gurukul-gold uppercase font-cinzel tracking-widest">Question / Term</span>
+                        <h3 id="fcFrontText" class="font-cinzel text-xl font-bold text-white">What is Plasmolysis?</h3>
+                        <p class="text-[11px] text-gray-400 mt-4">(Click to Flip Card)</p>
+                    </div>
+                    <div id="fcBack" class="absolute inset-0 backface-hidden rotate-y-180 p-6 flex flex-col items-center justify-center space-y-3 bg-gurukul-accent/80 rounded-2xl">
+                        <span class="text-xs text-gurukul-gold uppercase font-cinzel tracking-widest">Scientific Definition</span>
+                        <p id="fcBackText" class="text-xs sm:text-sm text-gray-200 leading-relaxed">Shrinkage of protoplasm away from cell wall due to exosmosis.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center items-center gap-4 mt-6">
+                <button onclick="prevFlashcard()" class="px-4 py-2 bg-gurukul-surface text-xs text-gurukul-gold font-bold rounded-lg border border-gurukul-gold/30">Previous</button>
+                <button onclick="nextFlashcard()" class="px-4 py-2 bg-gurukul-surface text-xs text-gurukul-gold font-bold rounded-lg border border-gurukul-gold/30">Next</button>
+            </div>
+        </section>
+
+  <!-- UPLOAD MODAL -->
+    <div id="uploadModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gurukul-card border-2 border-gurukul-gold rounded-2xl max-w-lg w-full p-6 relative space-y-4">
+            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-cinzel text-xl font-bold gold-gradient-text">Upload Biology PDF Study Notes</h3>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-gray-300 mb-1">Document Title:</label>
+                    <input type="text" id="docTitleInput" placeholder="e.g. Chapter 5 Mind Maps" class="w-full bg-gurukul-surface border border-gurukul-gold/30 rounded p-2 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-gray-300 mb-1">Chapter Tag:</label>
+                        <select id="docChapterSelect" class="w-full bg-gurukul-surface border border-gurukul-gold/30 rounded p-2 text-white">
+                            <option value="Ch 5: Cell">Ch 5: Cell</option>
+                            <option value="Ch 6: Tissues">Ch 6: Tissues</option>
+                            <option value="Ch 12: Food Resources">Ch 12: Food Resources</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 mb-1">Contributor Name:</label>
+                        <input type="text" id="docContributorInput" placeholder="Your Name" class="w-full bg-gurukul-surface border border-gurukul-gold/30 rounded p-2 text-white">
+                    </div>
+                </div>
+            </div>
+            <button onclick="simulatePDFUpload()" class="w-full gold-button py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider">Submit & Publish Notes</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        // Ember Background Particles
+        const emberCanvas = document.getElementById('emberCanvas');
+        const ctx = emberCanvas.getContext('2d');
+        let width = emberCanvas.width = window.innerWidth;
+        let height = emberCanvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = emberCanvas.width = window.innerWidth;
+            height = emberCanvas.height = window.innerHeight;
+        });
+
+        const particles = Array.from({ length: 40 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            size: Math.random() * 2 + 0.5,
+            speedY: Math.random() * 0.6 + 0.2,
+            opacity: Math.random() * 0.6 + 0.2
+        }));
+
+        function animateEmbers() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.y -= p.speedY;
+                if (p.y < 0) { p.y = height; p.x = Math.random() * width; }
+                ctx.fillStyle = `rgba(255, 215, 0, ${p.opacity})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animateEmbers);
+        }
+        animateEmbers();
+
+        // Osmosis Simulation
+        const osmosisCanvas = document.getElementById('osmosisCanvas');
+        const oCtx = osmosisCanvas ? osmosisCanvas.getContext('2d') : null;
+        let osmosisCellType = 'plant';
+        let soluteConcentration = 50;
+
+        function renderOsmosis() {
+            if (!oCtx) return;
+            const w = osmosisCanvas.width;
+            const h = osmosisCanvas.height;
+            oCtx.clearRect(0, 0, w, h);
+            oCtx.fillStyle = '#1e293b';
+            oCtx.fillRect(0, 0, w, h);
+
+            let scaleFactor = soluteConcentration < 50 ? 1 + (50 - soluteConcentration) * 0.006 : 1 - (soluteConcentration - 50) * 0.006;
+            const centerX = w / 2; const centerY = h / 2;
+
+            if (osmosisCellType === 'plant') {
+                oCtx.strokeStyle = '#22c55e'; oCtx.lineWidth = 6;
+                oCtx.strokeRect(centerX - 100, centerY - 80, 200, 160);
+                oCtx.fillStyle = '#b91c1c';
+                oCtx.beginPath();
+                const memW = 190 * scaleFactor; const memH = 150 * scaleFactor;
+                oCtx.roundRect(centerX - memW/2, centerY - memH/2, memW, memH, 15);
+                oCtx.fill();
+            } else {
+                oCtx.fillStyle = '#dc2626';
+                oCtx.beginPath();
+                oCtx.arc(centerX, centerY, Math.max(60 * scaleFactor, 15), 0, Math.PI * 2);
+                oCtx.fill();
+            }
+            requestAnimationFrame(renderOsmosis);
+        }
+
+        document.getElementById('soluteSlider')?.addEventListener('input', (e) => {
+            soluteConcentration = parseInt(e.target.value);
+            document.getElementById('soluteVal').innerText = soluteConcentration < 40 ? 'Hypotonic' : soluteConcentration > 60 ? 'Hypertonic' : 'Isotonic';
+        });
+
+        function setOsmosisCellType(type) {
+            osmosisCellType = type;
+            document.getElementById('modePlant').className = type === 'plant' ? "py-2 px-3 text-xs font-bold rounded-lg border border-gurukul-gold bg-gurukul-gold text-black" : "py-2 px-3 text-xs font-bold rounded-lg border border-gurukul-gold/30 bg-gurukul-card text-gray-300";
+            document.getElementById('modeRBC').className = type === 'rbc' ? "py-2 px-3 text-xs font-bold rounded-lg border border-gurukul-gold bg-gurukul-gold text-black" : "py-2 px-3 text-xs font-bold rounded-lg border border-gurukul-gold/30 bg-gurukul-card text-gray-300";
+        }
+        renderOsmosis();
+
+        // Microscope Simulation
+        const scopeCanvas = document.getElementById('microscopeCanvas');
+        const sCtx = scopeCanvas ? scopeCanvas.getContext('2d') : null;
+        let currentSlide = 'parenchyma';
+        let currentStain = 'safranin';
+        let currentZoom = 1;
+
+        const slidesData = {
+            parenchyma: { title: "Parenchyma Tissue", desc: "Isodiametric living cells with thin walls.", color: "#86efac" },
+            collenchyma: { title: "Collenchyma Tissue", desc: "Corner thickenings for flexibility.", color: "#4ade80" },
+            sclerenchyma: { title: "Sclerenchyma Fiber", desc: "Dead supportive tissue with lignin.", color: "#ca8a04" },
+            xylem: { title: "Xylem Vessels", desc: "Water-conducting tubular elements.", color: "#a16207" },
+            phloem: { title: "Phloem Sieve Tubes", desc: "Organic nutrient transport tubes.", color: "#15803d" },
+            squamous: { title: "Squamous Epithelium", desc: "Flat pavement cells for diffusion.", color: "#f43f5e" },
+            striated: { title: "Striated Muscle", desc: "Voluntary skeletal muscle fibers.", color: "#e11d48" },
+            neuron: { title: "Motor Neuron", desc: "Nervous tissue unit with axon.", color: "#38bdf8" },
+            blood: { title: "Blood Smear", desc: "RBCs and WBCs in fluid plasma.", color: "#ef4444" }
+        };
+
+        function drawScopeSlide() {
+            if (!sCtx) return;
+            const w = scopeCanvas.width; const h = scopeCanvas.height;
+            sCtx.clearRect(0, 0, w, h);
+            sCtx.fillStyle = '#0f172a';
+            sCtx.fillRect(0, 0, w, h);
+            sCtx.strokeStyle = currentStain === 'safranin' ? '#f43f5e' : currentStain === 'methylene' ? '#3b82f6' : '#86efac';
+            sCtx.lineWidth = 2 * currentZoom;
+
+            for (let x = 20; x < w; x += 40 * currentZoom) {
+                for (let y = 20; y < h; y += 40 * currentZoom) {
+                    sCtx.beginPath();
+                    sCtx.rect(x, y, 32 * currentZoom, 32 * currentZoom);
+                    sCtx.stroke();
+                }
+            }
+        }
+        function loadSlide(key) { currentSlide = key; drawScopeSlide(); }
+        function setStain(stain) { currentStain = stain; drawScopeSlide(); }
+        function setMagnification(mag) { currentZoom = mag === 10 ? 0.8 : mag === 40 ? 1.4 : 2.2; drawScopeSlide(); }
+        drawScopeSlide();
+
+        // Quiz & Flashcards
+        const quizDatabase = Array.from({ length: 100 }, (_, i) => ({
+            q: `[Q${i+1}] Comprehensive NCERT & Olympiad Biology Question regarding Class 9th syllabus.`,
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            correct: i % 4,
+            chapter: i % 2 === 0 ? "Ch 5: Cell" : "Ch 6: Tissues",
+            exp: `Detailed scientific explanation for Question ${i+1}.`
+        }));
+
+        let currentQIndex = 0;
+        let userAnswers = new Array(100).fill(null);
+
+        function initQuizNav() {
+            const navGrid = document.getElementById('quizNavGrid');
+            if(!navGrid) return;
+            navGrid.innerHTML = '';
+            for(let i=0; i<100; i++) {
+                const btn = document.createElement('button');
+                btn.className = `w-7 h-7 text-[10px] font-bold rounded border ${userAnswers[i] !== null ? 'bg-gurukul-gold text-black border-gurukul-gold' : 'bg-gurukul-card text-gray-350 border-gurukul-gold/20'}`;
+                btn.innerText = i + 1;
+                btn.onclick = () => loadQuestion(i);
+                navGrid.appendChild(btn);
+            }
+        }
+
+        function loadQuestion(index) {
+            currentQIndex = index;
+            const q = quizDatabase[index];
+            document.getElementById('qNumberDisplay').innerText = `Question ${index + 1} of 100`;
+            document.getElementById('qChapterTag').innerText = q.chapter;
+            document.getElementById('qText').innerText = q.q;
+            const container = document.getElementById('qOptionsContainer');
+            container.innerHTML = '';
+            q.options.forEach((opt, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-3 text-xs font-semibold rounded-lg border bg-gurukul-card border-gurukul-gold/20 text-gray-200`;
+                btn.innerHTML = `<span>${String.fromCharCode(65 + optIdx)}.</span> ${opt}`;
+                btn.onclick = () => { userAnswers[currentQIndex] = optIdx; loadQuestion(currentQIndex); updateScore(); };
+                container.appendChild(btn);
+            });
+            initQuizNav();
+        }
+
+        function updateScore() {
+            let score = userAnswers.filter((ans, idx) => ans === quizDatabase[idx].correct).length;
+            document.getElementById('quizScoreDisplay').innerText = `${score} / 100`;
+        }
+
+        function prevQuestion() { if (currentQIndex > 0) loadQuestion(currentQIndex - 1); }
+        function nextQuestion() { if (currentQIndex < 99) loadQuestion(currentQIndex + 1); }
+        function generateCertificate() { alert("Assessment certificate generated successfully!"); }
+
+        let fcIndex = 0;
+        let isFlipped = false;
+        function flipFlashcard() {
+            isFlipped = !isFlipped;
+            document.getElementById('flashcardObject').className = isFlipped ? "relative w-full h-64 cursor-pointer transition-transform duration-500 transform-style-3d bg-gurukul-surface border-2 border-gurukul-gold/40 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-2xl rotate-y-180" : "relative w-full h-64 cursor-pointer transition-transform duration-500 transform-style-3d bg-gurukul-surface border-2 border-gurukul-gold/40 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-2xl";
+        }
+        function prevFlashcard() { if(fcIndex > 0) fcIndex--; }
+        function nextFlashcard() { if(fcIndex < 29) fcIndex++; }
+
+        function openUploadModal() { document.getElementById('uploadModal').classList.remove('hidden'); }
+        function closeUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); }
+        function simulatePDFUpload() { alert("Notes uploaded successfully!"); closeUploadModal(); }
+        function downloadSamplePDF(name) { alert(`Downloading ${name}...`); }
+
+        window.onload = () => { initQuizNav(); loadQuestion(0); };
+    </script>
+</body>
+</html>
+
+<!-- Leadership Section (Exclusively Amrit Singh& Anmol Tiwari) -->
+    <section class="py-16 relative z-10 bg-[#0F0103] border-t border-amber-500/20">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-amber-400 text-xs font-black uppercase tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30">Academic Guidance</span>
+                <h2 class="font-cinzel text-3xl font-black text-gold-gradient mt-2">Vidya Nirman Leadership</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-maroon-card p-6 rounded-2xl border-gold-glow flex items-center gap-4">
+                    <img src="amrit-image.jpg" alt="Amrit Singh" class="w-20 h-20 rounded-full object-cover border-2 border-amber-400">
+                    <div>
+                        <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">FOUNDER</span>
+                        <h3 class="font-cinzel text-lg font-bold text-amber-100 mt-1">AMRIT SINGH</h3>
+                        <p class="text-xs text-amber-300/80">Chief Visionary &amp; Curriculum Architect</p>
+                    </div>
+                </div>
+
+                <div class="bg-maroon-card p-6 rounded-2xl border-gold-glow flex items-center gap-4">
+                    <img src="anmol-image.png" alt="Anmol Tiwari" class="w-20 h-20 rounded-full object-cover border-2 border-amber-400">
+                    <div>
+                        <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">CO-FOUNDER</span>
+                        <h3 class="font-cinzel text-lg font-bold text-amber-100 mt-1">ANMOL TIWARI</h3>
+                        <p class="text-xs text-amber-300/80">Academic Strategist &amp; Tech Innovator</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
